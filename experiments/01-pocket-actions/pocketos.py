@@ -181,7 +181,9 @@ class Phone:
     def screen(self):
         """Elements visible on the current screen, in display order."""
         if self.sharing is not None:
-            return [Node("contact", c, uid=-(i + 1)) for i, c in enumerate(self.contacts)]
+            if not hasattr(self, "_contact_nodes"):
+                self._contact_nodes = [Node("contact", c, uid=-(i + 1)) for i, c in enumerate(self.contacts)]
+            return list(self._contact_nodes)
         return list(self.cur.children)
 
     def observation(self):
@@ -210,6 +212,8 @@ class Phone:
 
     def step(self, verb, el=None):
         """Apply an action. Invalid actions are no-ops (they still cost a step)."""
+        if verb not in VERBS or (el is None and verb not in NO_TARGET):
+            return False
         if verb == "HOME":
             self.cur, self.sharing = self.root, None
         elif verb == "BACK":

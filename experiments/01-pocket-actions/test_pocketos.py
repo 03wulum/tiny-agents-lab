@@ -1,5 +1,4 @@
 """Code-correctness tests for the PocketOS simulator, expert and baselines (< 10 s)."""
-import random
 
 import pytest
 
