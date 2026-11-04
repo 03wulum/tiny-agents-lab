@@ -11,7 +11,7 @@ Tiny on-device agents: models of 50 MB or less that act inside apps (pick, move,
 ## How this repo works
 
 - Every experiment has pass/fail criteria fixed before any training ([SOP](docs/SOP.md)).
-- Training runs on one NVIDIA GPU in 15 minutes or less. Evaluation and CI run on any CPU.
+- Training runs on one NVIDIA GPU, one experiment at a time, in about 5 minutes (never more than 10). Evaluation and CI run on any CPU.
 - `python run_all.py` evaluates everything and prints one verdict table.
 
 ## License

@@ -1,12 +1,12 @@
 # 01 · Pocket actions: a tiny model that operates apps without language
 
-**Goal:** finish multi-step tasks in phone apps the model has never seen, with 2M parameters or less (8 MB), trained in 15 minutes or less on one GPU.
+**Goal:** finish multi-step tasks in phone apps the model has never seen, with 2M parameters or less (8 MB), trained in about 5 minutes (10 at most) on one GPU.
 **Verdict:** PENDING. The code and tests are done, and training on the GPU is next.
 **Details:** [plan](https://claude.ai/artifact/41b5MpqiRaq4BaRwsBHPch) · [results](results/results.md) · [explainer](EXPLAINER.md)
 
 | # | Criterion | Threshold | Result |
 | --- | --- | --- | --- |
-| C1 | Budget: kept models, GPU training, eval RAM, CPU time per decision | ≤ 50 MB, ≤ 15 min, ≤ 2 GB, ≤ 10 ms | pending |
+| C1 | Budget: kept models, GPU training, eval RAM, CPU time per decision | ≤ 50 MB, ≤ 10 min, ≤ 2 GB, ≤ 10 ms | pending |
 | C2 | In-distribution success (2M model, 3 seeds) | ≥ 90% | pending |
 | C3 | Success on unseen apps (core) | ≥ 70% and ≥ keyword + 25 pts | pending |
 | C4 | Success on tasks with twice the sub-goals | ≥ 60% | pending |
@@ -23,7 +23,7 @@ Prior work: [FunctionGemma](https://blog.google/technology/developers/functionge
 
 ```bash
 python train.py --smoke   # 1-2 min end-to-end check (NVIDIA GPU)
-python train.py           # full sweep: <= 15 min of GPU training, then GPU evaluation
+python train.py           # full sweep: about 5 min of GPU training (hard cap 5.5), then GPU evaluation
 python run.py             # PASS/FAIL table, plots, results/ (CPU, never trains)
 python -m pytest -q
 ```
@@ -33,6 +33,7 @@ Training needs `requirements-gpu.txt` (PyTorch with CUDA). Evaluation, tests and
 ## Deviations from SOP
 
 - Training needs a GPU, so `run.py` judges the GPU evaluation in `results/eval.json` and re-checks a sample of it on CPU. It doesn't recompute every number.
+- Obi cut the training budget to about 5 minutes (2026-11-04), so the recursive-2M, no-match-bits, demonstration-count and 500K text-model runs were dropped before any training. The blind-prompt, random-weights, int8 and clutter controls remain, and they are evaluation-only.
 - The cue parser knows only the training-time joiner words ("then", "and"). The "new wording" split uses joiners it has never seen.
 
 ## Files

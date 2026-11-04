@@ -4,13 +4,13 @@ Agreed with Obi on 2026-11-04 before any training. Thresholds never move after r
 """
 
 GOAL = ("Finish multi-step tasks in phone apps never seen before with a model of 2M parameters "
-        "or less (8 MB), trained in 15 minutes or less on one GPU.")
+        "or less (8 MB), trained in about 5 minutes (10 at most) on one GPU.")
 HYPOTHESIS = ("A cue-and-pointer policy of <= 2M parameters completes >= 70% of multi-step tasks in "
               "unseen simulated apps, beating a same-size text-token model by >= 15 points.")
 
 # Budgets (C1)
 MAX_KEPT_MB = 50.0          # all kept checkpoints together
-MAX_TRAIN_MIN = 15.0        # GPU training, all runs together
+MAX_TRAIN_MIN = 10.0        # GPU training, all runs together (Obi: ~5 min, never more than 10)
 MAX_RAM_GB = 2.0            # evaluation process
 MAX_MS_PER_DECISION = 10.0  # largest cue model, NumPy on CPU
 

@@ -23,7 +23,7 @@ That's the **cue-and-pointer policy**:
 1. **A fake phone.** PocketOS generates apps, folders, files and settings from a random seed, so every task happens on a phone the model has never seen. Six of the 20 app layouts, and a whole separate pool of names, are kept out of training entirely.
 2. **A perfect teacher.** For every task, a search program computes the shortest list of steps. The model learns by copying it (*behavioural cloning*).
 3. **Learning from its own mistakes (DAgger).** After the first round, the model plays on its own. Wherever it ends up, even somewhere the teacher would never go, the teacher says what the right next step is from there. This is repeated three times. Copying alone tends to fail, because one early mistake leads to situations the model never practised.
-4. **Five sizes,** from 20 thousand to 5 million parameters, plus a "recursive" 2M model that runs its layers 4 times. All training runs only on Fortran's NVIDIA GPU, in 15 minutes or less in total.
+4. **Five sizes,** from 20 thousand to 5 million parameters. All training runs only on Fortran's NVIDIA GPU, one experiment at a time, in about 5 minutes in total.
 5. **A fair rival.** A same-size model reads the whole screen and instruction as plain text and must *write* its answer as text, e.g. `CUT papalo.doc`. This is how language models do function calling today.
 6. **Tests:** fresh phones (in-distribution), never-seen apps, tasks with twice as many steps, and instructions with new wording. A model only gets credit if it finishes within twice the teacher's step count.
 

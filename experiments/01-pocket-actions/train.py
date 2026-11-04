@@ -1,6 +1,6 @@
 """GPU training + evaluation for experiment 01. Runs on Fortran's NVIDIA GPU only.
 
-    python train.py                 # full sweep, <= 15 min of training, then GPU evaluation
+    python train.py                 # full sweep, ~5 min of training (hard cap 5.5), then GPU evaluation
     python train.py --smoke         # 1-minute end-to-end check of the whole pipeline
     python train.py --eval-only     # re-evaluate saved checkpoints
 
@@ -31,24 +31,19 @@ CKPT = HERE / "checkpoints"
 RESULTS = HERE / "results"
 
 # name: (family, size, train seed, seconds of training, n demo episodes, extra)
-RUNS = [
-    ("cue-20k", "cue", "20k", 0, 20, 20000, {}),
-    ("cue-100k", "cue", "100k", 0, 20, 20000, {}),
-    ("cue-500k", "cue", "500k", 0, 30, 20000, {}),
-    ("cue-2m-s0", "cue", "2m", 0, 45, 20000, {}),
-    ("cue-2m-s1", "cue", "2m", 1, 45, 20000, {}),
-    ("cue-2m-s2", "cue", "2m", 2, 45, 20000, {}),
-    ("cue-5m", "cue", "5m", 0, 55, 20000, {}),
-    ("cue-rec2m", "cue", "rec2m", 0, 45, 20000, {}),
-    ("cue-2m-nomatch", "cue", "2m", 0, 30, 20000, {"no_match": True}),
-    ("cue-2m-demos1k", "cue", "2m", 0, 20, 1000, {}),
-    ("cue-2m-demos5k", "cue", "2m", 0, 20, 5000, {}),
-    ("text-500k", "text", "500k", 0, 45, 20000, {}),
-    ("text-2m-s0", "text", "2m", 0, 55, 20000, {}),
-    ("text-2m-s1", "text", "2m", 1, 55, 20000, {}),
-    ("text-2m-s2", "text", "2m", 2, 55, 20000, {}),
+RUNS = [  # Obi's rule: one training at a time, about 5 minutes in total, never more than 10
+    ("cue-20k", "cue", "20k", 0, 10, 20000, {}),
+    ("cue-100k", "cue", "100k", 0, 10, 20000, {}),
+    ("cue-500k", "cue", "500k", 0, 15, 20000, {}),
+    ("cue-2m-s0", "cue", "2m", 0, 20, 20000, {}),
+    ("cue-2m-s1", "cue", "2m", 1, 20, 20000, {}),
+    ("cue-2m-s2", "cue", "2m", 2, 20, 20000, {}),
+    ("cue-5m", "cue", "5m", 0, 25, 20000, {}),
+    ("text-2m-s0", "text", "2m", 0, 30, 20000, {}),
+    ("text-2m-s1", "text", "2m", 1, 30, 20000, {}),
+    ("text-2m-s2", "text", "2m", 2, 30, 20000, {}),
 ]
-TRAIN_CAP_SECONDS = 14 * 60   # hard cap on total training wall time (SOP: <= 15 min)
+TRAIN_CAP_SECONDS = 330   # hard cap on total training wall time, including DAgger rollouts
 DAGGER_ROUNDS = 3
 
 
@@ -228,9 +223,9 @@ def train_run(name, family, size, seed, seconds, n_demos, extra, demos, device, 
     random.seed(seed)
     model = build(family, size, extra).to(device)
     data = demos["cue"].head(n_demos[0]) if family == "cue" else demos["text"].head(n_demos[1])
-    bs = 256 if family == "cue" else 64
+    bs = 1024 if family == "cue" else 128   # large batches: use the whole GPU
     big = MT.n_params(model) > 1_000_000
-    peak_lr = 5e-4 if big else 2e-3
+    peak_lr = 1e-3 if big else 3e-3
     opt = torch.optim.AdamW(model.parameters(), lr=peak_lr, weight_decay=0.01)
     phases = [0.55] + [0.45 / DAGGER_ROUNDS] * DAGGER_ROUNDS
     t0, step = time.time(), 0
@@ -240,7 +235,7 @@ def train_run(name, family, size, seed, seconds, n_demos, extra, demos, device, 
     for ph, frac in enumerate(phases):
         if ph > 0:  # DAgger round: roll out the learner, label with the expert, aggregate
             model.eval()
-            n_ep = 300 if family == "cue" else 120
+            n_ep = 200 if family == "cue" else 60
             seeds = split_seeds("train", n_ep, dagger_offset + ph * 10_000)
             _, lc, lt = rollout(policy_cls(model, device), seeds, "train", collect=True)
             data.add(lc if family == "cue" else lt)
@@ -352,7 +347,7 @@ def main():
     runs = RUNS
     n_eval = args.n_eval
     if args.smoke:
-        runs = [r[:4] + (5, 300, r[6]) for r in RUNS if r[0] in ("cue-20k", "cue-2m-s0", "text-500k", "text-2m-s0")]
+        runs = [r[:4] + (5, 300, r[6]) for r in RUNS if r[0] in ("cue-20k", "cue-2m-s0", "text-2m-s0")]
         n_eval = 20
     log(f"GPU: {torch.cuda.get_device_name(0)}, {torch.cuda.get_device_properties(0).total_memory / 2**30:.1f} GB")
     meta = {"gpu": torch.cuda.get_device_name(0), "torch": torch.__version__, "smoke": args.smoke, "runs": {}}
