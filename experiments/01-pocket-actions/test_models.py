@@ -116,5 +116,5 @@ def test_dagger_collection_labels_learner_states():
 
 def test_make_demos_small():
     from rollout import make_demos
-    cue, text = make_demos(4, procs=2)
+    (cue, text), = list(make_demos(4))
     assert len(cue) == len(text) > 4

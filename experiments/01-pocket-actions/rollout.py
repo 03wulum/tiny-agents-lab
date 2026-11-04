@@ -1,8 +1,6 @@
 """Expert demonstrations and lock-step rollouts (no PyTorch; shared by train.py and run.py)."""
 from __future__ import annotations
 
-import multiprocessing as mp
-
 import numpy as np
 
 from features import CueState, TextState, action_index, encode_cue, encode_text, text_target
@@ -26,13 +24,12 @@ def _expert_episode(seed):
     return cue, text
 
 
-def make_demos(n_episodes, offset=0, procs=8):
+def make_demos(n_episodes, offset=0, chunk=1000):
+    """Yield (cue_samples, text_samples) for chunks of expert episodes. Single process, low RAM."""
     seeds = list(split_seeds("train", n_episodes, offset))
-    with mp.Pool(procs) as pool:
-        eps = pool.map(_expert_episode, seeds, chunksize=64)
-    cue = [x for c, _ in eps for x in c]
-    text = [x for _, t in eps for x in t]
-    return cue, text
+    for i in range(0, len(seeds), chunk):
+        eps = [_expert_episode(sd) for sd in seeds[i:i + chunk]]
+        yield [x for c, _ in eps for x in c], [x for _, t in eps for x in t]
 
 
 class Single:

@@ -165,11 +165,11 @@ def decode_action(enc, els, flat):
     return (VERBS[v], None) if row == 0 else (VERBS[v], els[row - 1 - nc])
 
 
-def collate(batch):
+def collate(batch, Lc=None, Le=None):
     """Pad a list of encodings into batch arrays. Rows: [state, cues(Lc), elements(Le)]."""
     B = len(batch)
-    Lc = max(1, max(len(b["cue_id"]) for b in batch))
-    Le = max(1, max(len(b["el_kind"]) for b in batch))
+    Lc = Lc or max(1, max(len(b["cue_id"]) for b in batch))
+    Le = Le or max(1, max(len(b["el_kind"]) for b in batch))
     T = 1 + Lc + Le
     out = dict(
         cue_id=np.zeros((B, Lc), np.int64), cue_role=np.zeros((B, Lc), np.int64),

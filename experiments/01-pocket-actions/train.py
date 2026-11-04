@@ -53,35 +53,109 @@ DAGGER_ROUNDS = 3
 
 
 # --------------------------------------------------------- batches ----
-def cue_batch(samples, device):
-    encs = [e for e, _ in samples]
-    b = collate(encs)
-    Lc = b["cue_id"].shape[1]
-    y = torch.tensor([padded_index(e, a, Lc) for e, a in samples], device=device)
-    return MT.to_torch(b, device), y
+LC, LE, TEXT_LEN = 48, 16, 704   # fixed training pads (measured max: 40 cues, 11 elements, 628 chars)
+CUE_DT = dict(cue_id=torch.int16, cue_role=torch.int8, cue_clause=torch.int8, cue_tick=torch.int8,
+              el_kind=torch.int8, el_ftype=torch.int8, el_feat=torch.uint8, match=torch.uint8,
+              st_feat=torch.uint8, path_match=torch.uint8, clip_match=torch.uint8, prev=torch.int8,
+              pad=torch.bool, valid=torch.bool)
+FLOAT_KEYS = {"el_feat", "match", "st_feat", "path_match", "clip_match"}
 
 
-def text_batch(samples, device):
-    seqs = [np.concatenate([x, y]) for x, y in samples]
-    T = max(len(s) for s in seqs)
-    ids = np.zeros((len(seqs), T), np.int64)
-    pad = np.ones((len(seqs), T), bool)
-    tgt = np.full((len(seqs), T), -100, np.int64)
-    for i, ((x, y), s) in enumerate(zip(samples, seqs)):
-        o = T - len(s)                       # left padding
-        ids[i, o:] = s
-        pad[i, o:] = False
-        tgt[i, o + len(x) - 1:T - 1] = y     # predict y from the position before each token
-    t = lambda a: torch.as_tensor(a, device=device)  # noqa: E731
-    return t(ids), t(pad), t(tgt)
+class CuePack:
+    """All cue-model samples as compact tensors on the GPU (keeps Fortran's system RAM free)."""
+
+    def __init__(self, device):
+        self.device, self.parts, self.y, self._cat = device, {k: [] for k in CUE_DT}, [], None
+
+    def add(self, samples):
+        samples = [(e, a) for e, a in samples if len(e["cue_id"]) <= LC and len(e["el_kind"]) <= LE]
+        if not samples:
+            return
+        b = collate([e for e, _ in samples], LC, LE)
+        for k, dt in CUE_DT.items():
+            self.parts[k].append(torch.as_tensor(b[k]).to(self.device, dt))
+        self.y.append(torch.tensor([padded_index(e, a, LC) for e, a in samples], device=self.device))
+        self._cat = None
+
+    def _cats(self):
+        if self._cat is None:
+            self.parts = {k: [torch.cat(v)] for k, v in self.parts.items()}
+            self.y = [torch.cat(self.y)]
+            self._cat = True
+        return {k: v[0] for k, v in self.parts.items()}, self.y[0]
+
+    def __len__(self):
+        return sum(len(t) for t in self.y)
+
+    def head(self, n):
+        out = CuePack(self.device)
+        d, y = self._cats()
+        out.parts = {k: [v[:n]] for k, v in d.items()}
+        out.y, out._cat = [y[:n]], True
+        return out
+
+    def batch(self, idx):
+        d, y = self._cats()
+        b = {k: (v[idx].float() if k in FLOAT_KEYS else v[idx] if v.dtype == torch.bool else v[idx].long())
+             for k, v in d.items()}
+        return b, y[idx]
 
 
-def loss_fn(model, family, samples, device):
+class TextPack:
+    """Left-padded byte sequences (instruction+state, then target) on the GPU."""
+
+    def __init__(self, device):
+        self.device, self.ids, self.off, self.lx, self._cat = device, [], [], [], None
+
+    def add(self, samples):
+        samples = [(x, y) for x, y in samples if len(x) + len(y) <= TEXT_LEN]
+        if not samples:
+            return
+        ids = np.zeros((len(samples), TEXT_LEN), np.uint8)
+        off = np.zeros(len(samples), np.int16)
+        lx = np.zeros(len(samples), np.int16)
+        for i, (x, y) in enumerate(samples):
+            seq = np.concatenate([x, y])
+            off[i], lx[i] = TEXT_LEN - len(seq), len(x)
+            ids[i, off[i]:] = seq
+        for lst, arr in ((self.ids, ids), (self.off, off), (self.lx, lx)):
+            lst.append(torch.as_tensor(arr).to(self.device))
+        self._cat = None
+
+    def _cats(self):
+        if self._cat is None:
+            self.ids, self.off, self.lx = [torch.cat(self.ids)], [torch.cat(self.off)], [torch.cat(self.lx)]
+            self._cat = True
+        return self.ids[0], self.off[0], self.lx[0]
+
+    def __len__(self):
+        return sum(len(t) for t in self.off)
+
+    def head(self, n):
+        out = TextPack(self.device)
+        ids, off, lx = self._cats()
+        out.ids, out.off, out.lx, out._cat = [ids[:n]], [off[:n]], [lx[:n]], True
+        return out
+
+    def batch(self, idx):
+        ids, off, lx = self._cats()
+        ids, off, lx = ids[idx].long(), off[idx].long(), lx[idx].long()
+        start = int(off.min())
+        ids, off = ids[:, start:], off - start
+        T = ids.shape[1]
+        pos = torch.arange(T, device=ids.device)[None]
+        pad = pos < off[:, None]
+        first = off + lx - 1                                  # position that predicts the first target char
+        tgt = torch.full_like(ids, -100)
+        tgt[:, :-1] = torch.where(pos[:, :-1] >= first[:, None], ids[:, 1:], tgt[:, :-1])
+        return ids, pad, tgt
+
+
+def loss_fn(model, family, pack, idx):
     if family == "cue":
-        b, y = cue_batch(samples, device)
-        logits = model(b).flatten(1)
-        return F.cross_entropy(logits, y)
-    ids, pad, tgt = text_batch(samples, device)
+        b, y = pack.batch(idx)
+        return F.cross_entropy(model(b).flatten(1), y)
+    ids, pad, tgt = pack.batch(idx)
     return F.cross_entropy(model(ids, pad).flatten(0, 1), tgt.flatten(), ignore_index=-100)
 
 
@@ -153,13 +227,13 @@ def train_run(name, family, size, seed, seconds, n_demos, extra, demos, device, 
     torch.manual_seed(seed)
     random.seed(seed)
     model = build(family, size, extra).to(device)
-    data = list((demos["cue"] if family == "cue" else demos["text"])[:n_demos])
+    data = demos["cue"].head(n_demos[0]) if family == "cue" else demos["text"].head(n_demos[1])
     bs = 256 if family == "cue" else 64
     big = MT.n_params(model) > 1_000_000
     peak_lr = 5e-4 if big else 2e-3
     opt = torch.optim.AdamW(model.parameters(), lr=peak_lr, weight_decay=0.01)
     phases = [0.55] + [0.45 / DAGGER_ROUNDS] * DAGGER_ROUNDS
-    t0, step, rng = time.time(), 0, random.Random(seed)
+    t0, step = time.time(), 0
     train_time = 0.0
     dagger_offset = 1_000_000 + 100_000 * seed
     policy_cls = BatchedCue if family == "cue" else BatchedText
@@ -169,7 +243,7 @@ def train_run(name, family, size, seed, seconds, n_demos, extra, demos, device, 
             n_ep = 300 if family == "cue" else 120
             seeds = split_seeds("train", n_ep, dagger_offset + ph * 10_000)
             _, lc, lt = rollout(policy_cls(model, device), seeds, "train", collect=True)
-            data += lc if family == "cue" else lt
+            data.add(lc if family == "cue" else lt)
             model.train()
         ts = time.time()
         while time.time() - ts < frac * seconds:
@@ -177,9 +251,9 @@ def train_run(name, family, size, seed, seconds, n_demos, extra, demos, device, 
             lr = peak_lr * min(1.0, (step + 1) / 100) * max(0.05, 1 - elapsed / seconds)
             for g in opt.param_groups:
                 g["lr"] = lr
-            batch = [data[rng.randrange(len(data))] for _ in range(bs)]
+            idx = torch.randint(len(data), (bs,), device=device)
             with torch.autocast("cuda", dtype=torch.bfloat16, enabled=device == "cuda"):
-                loss = loss_fn(model, family, batch, device)
+                loss = loss_fn(model, family, data, idx)
             opt.zero_grad(set_to_none=True)
             loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
@@ -260,7 +334,6 @@ def main():
     ap.add_argument("--smoke", action="store_true", help="tiny end-to-end run (~1-2 min)")
     ap.add_argument("--eval-only", action="store_true")
     ap.add_argument("--n-eval", type=int, default=500)
-    ap.add_argument("--procs", type=int, default=8)
     args = ap.parse_args()
     if not torch.cuda.is_available():
         raise SystemExit("No CUDA GPU found. Training runs on the NVIDIA GPU only (SOP v0.6).")
@@ -287,14 +360,19 @@ def main():
     if not args.eval_only:
         t = time.time()
         n_demo = max(r[5] for r in runs)
-        cue, text = make_demos(n_demo, procs=args.procs)
+        demos = {"cue": CuePack(device), "text": TextPack(device)}
+        bounds = []
+        for cue_part, text_part in make_demos(n_demo):
+            demos["cue"].add(cue_part)
+            demos["text"].add(text_part)
+            bounds.append((len(demos["cue"]), len(demos["text"])))
         meta["demo_seconds"] = round(time.time() - t, 1)
-        log(f"generated {n_demo} expert episodes: {len(cue)} decisions in {meta['demo_seconds']}s (CPU, simulator only)")
-        demos = {"cue": cue, "text": text}
+        log(f"generated {n_demo} expert episodes: {len(demos['cue'])} decisions in {meta['demo_seconds']}s "
+            f"(simulator on CPU, stored on GPU)")
         used, planned = 0.0, sum(r[4] for r in runs)
         for name, fam, size, seed, secs, nd, extra in runs:
             # n_demos counts episodes; convert to decisions (about 11 per episode)
-            n_dec = len(cue) if nd >= n_demo else int(len(cue) * nd / n_demo)
+            n_dec = bounds[-1] if nd >= n_demo else bounds[max(0, nd // 1000 - 1)]
             # keep total training wall time (gradient steps + DAgger rollouts) under the cap
             scale = min(1.0, max(0.1, (TRAIN_CAP_SECONDS - used) / (1.4 * planned)))
             planned -= secs
