@@ -1,17 +1,26 @@
 # 01 · Pocket actions: a tiny model that operates apps without language
 
 **Goal:** finish multi-step tasks in phone apps the model has never seen, with 2M parameters or less (8 MB), trained in about 5 minutes (10 at most) on one GPU.
-**Verdict:** PENDING. The code and tests are done, and training on the GPU is next.
-**Details:** [plan](https://claude.ai/artifact/41b5MpqiRaq4BaRwsBHPch) · [results](results/results.md) · [explainer](EXPLAINER.md)
+**Verdict:** INCONCLUSIVE (2/5 criteria). ✨ INTRIGUING: a 25K-parameter model (100 KB) gets 82% on apps it has never seen, about the same as the 2M model (87%) and far above keyword matching (31%). It falls apart on long tasks (5%), and the text-model comparison (C5) is still being checked.
+**Details:** [results](results/results.md) · [explainer](EXPLAINER.md) · [plan](https://claude.ai/artifact/41b5MpqiRaq4BaRwsBHPch)
 
 | # | Criterion | Threshold | Result |
 | --- | --- | --- | --- |
-| C1 | Budget: kept models, GPU training, eval RAM, CPU time per decision | ≤ 50 MB, ≤ 10 min, ≤ 2 GB, ≤ 10 ms | pending |
-| C2 | In-distribution success (2M model, 3 seeds) | ≥ 90% | pending |
-| C3 | Success on unseen apps (core) | ≥ 70% and ≥ keyword + 25 pts | pending |
-| C4 | Success on tasks with twice the sub-goals | ≥ 60% | pending |
-| C5 | Cue model vs same-size text model, unseen apps | ≥ +15 pts | pending |
-| NC | Negative control: the instruction swapped for another task's | must stay < 15% | pending |
+| C1 | Budget: kept models, GPU training, eval RAM, CPU time per decision | ≤ 50 MB, ≤ 10 min, ≤ 2 GB, ≤ 10 ms | FAIL: 70 MB of fp32 checkpoints; 4.6 min, 3.5 ms pass |
+| C2 | In-distribution success (2M model, 3 seeds) | ≥ 90% | FAIL: 84.9% ± 1.3% |
+| C3 | Success on unseen apps (core) | ≥ 70% and ≥ keyword + 25 pts | PASS: 86.8% ± 1.4% (keyword 30.6%) |
+| C4 | Success on tasks with twice the sub-goals | ≥ 60% | FAIL: 5.3% ± 0.5% |
+| C5 | Cue model vs same-size text model, unseen apps | ≥ +15 pts | PASS*: +86.8 pts. The text model scored 0%, which is being checked for a decoding bug |
+| NC | Negative control: the instruction swapped for another task's | must stay < 15% | 0.0%, as it should |
+
+![success vs size](results/success_vs_size.png)
+
+## What I found that the plan didn't predict
+
+- **Size barely matters here.** 25K, 100K, 500K and 2M parameters all land at 82-88% on unseen apps. The 5M model was slightly worse, because 25 seconds of training was too little for it. The rules of this world fit in about 100 KB.
+- **Long tasks break, and the cause is clear.** Training tasks have at most 3 clauses, so the embeddings for clauses 4-6 are never trained. The model fails as soon as an instruction runs past its third clause. A relative signal ("the first unfinished clause") would likely fix it, which is the obvious follow-up.
+- **New wording hurts, as designed.** Unseen joiners ("after that", "next") stop the parser from splitting clauses, and success drops to about 28%.
+- **int8 costs nothing.** cue-2m at int8 (about 2 MB) scores the same as fp32. Storing the checkpoints as fp16 or int8 would have passed C1's size limit, but the threshold was measured on what was actually saved.
 
 ## The idea
 
