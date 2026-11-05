@@ -1,8 +1,8 @@
 """Evaluate experiment 01 and print the PASS/FAIL table. Never trains (training: train.py on GPU).
 
     python run.py           # judge results/eval.json, re-check a sample on CPU, write results/
-    python run.py --quick   # same with a smaller CPU re-check (< 30 s); what CI runs
-    python run.py --clean   # delete caches, smoke outputs and intermediate checkpoints
+    python run.py --quick   # smaller CPU re-check (< 30 s), prints the table, writes nothing; what CI runs
+    python run.py --clean   # delete caches and all checkpoints (project rule: nothing but results is kept)
 """
 from __future__ import annotations
 
@@ -141,7 +141,7 @@ def table(rows):
 
 def clean():
     freed = 0
-    targets = [HERE / "__pycache__", HERE / ".pytest_cache", CKPT / "cue-2m-s0-bconly.npz"]
+    targets = [HERE / "__pycache__", HERE / ".pytest_cache", CKPT]
     for t in targets:
         if t.is_dir():
             freed += sum(f.stat().st_size for f in t.rglob("*") if f.is_file())
@@ -149,7 +149,7 @@ def clean():
         elif t.exists():
             freed += t.stat().st_size
             t.unlink()
-    print(f"freed {freed / 2**20:.1f} MB (kept checkpoints/ and results/; delete the repo .venv by hand when done)")
+    print(f"freed {freed / 2**20:.1f} MB, checkpoints included (kept results/; delete the repo .venv by hand when done)")
 
 
 def main():
@@ -161,7 +161,7 @@ def main():
     if args.clean:
         return clean()
     t0 = time.time()
-    RESULTS.mkdir(exist_ok=True)
+    write = not args.quick  # --quick never overwrites committed results
     n = 20 if args.quick else 100
     check = spot_check(n)
     ms = ms_per_decision(10 if args.quick else 40)
@@ -170,7 +170,9 @@ def main():
         print(f"No results/eval.json yet: train on the GPU first (python train.py).\n"
               f"CPU check on {n} tasks/split: keyword {check['keyword']}, random {check['random']}\n"
               f"5M-model decision latency on this CPU: {ms:.1f} ms")
-        (RESULTS / "verdict.json").write_text(json.dumps({"verdict": "PENDING", "criteria_passed": "0/5"}, indent=1))
+        if write:
+            RESULTS.mkdir(exist_ok=True)
+            (RESULTS / "verdict.json").write_text(json.dumps({"verdict": "PENDING", "criteria_passed": "0/5"}, indent=1))
         return
     ev = json.loads(ev_path.read_text())
     kept = sum(ev["checkpoint_bytes"].values()) - ev["checkpoint_bytes"].get("cue-2m-s0-bconly.npz", 0)
@@ -182,6 +184,9 @@ def main():
     if "cue-2m-s0" in check:
         print(f"CPU re-check of cue-2m-s0 on {n} tasks/split: {check['cue-2m-s0']} "
               f"(GPU eval: { {sp: ev['success']['cue-2m-s0'][sp] for sp in SPLITS} })")
+    if not write:
+        print("(--quick: results/ left as committed)")
+        return
     plots(ev, RESULTS)
     s = ev["success"]
     other = [f"| {k} | " + " | ".join(f"{100 * v[sp]:.1f}" if sp in v else "-" for sp in SPLITS) + " |"

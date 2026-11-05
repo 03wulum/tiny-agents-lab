@@ -1,8 +1,8 @@
 """Evaluate experiment 02 and print the PASS/FAIL table. Never trains (training: train.py on GPU).
 
     python run.py           # judge results/eval.json, re-check a sample on CPU, write results/
-    python run.py --quick   # smaller CPU re-check (< 30 s); what CI runs
-    python run.py --clean   # delete caches and intermediate checkpoints
+    python run.py --quick   # smaller CPU re-check (< 30 s), writes nothing; what CI runs
+    python run.py --clean   # delete caches and all checkpoints (keeps results/)
 """
 from _shared import HERE, load01
 
