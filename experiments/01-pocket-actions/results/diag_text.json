@@ -1,0 +1,212 @@
+{
+ "text-2m-s0": {
+  "states": 615,
+  "teacher_forced_loss": 0.6586228370666504,
+  "teacher_forced_char_acc": 0.7840308290685424,
+  "teacher_forced_exact": 0.1902439024390244,
+  "greedy_step_acc": 0.1902439024390244,
+  "greedy_noop_rate": 0.7300813008130081,
+  "examples": [
+   {
+    "expert": "OPEN tezuba",
+    "decoded": "OPEN ba"
+   },
+   {
+    "expert": "OPEN papa",
+    "decoded": "OPEN zu"
+   },
+   {
+    "expert": "OPEN lovi",
+    "decoded": "OPEN zu"
+   },
+   {
+    "expert": "DELETE balori.mp3",
+    "decoded": "DELETE te.jpg"
+   },
+   {
+    "expert": "OPEN baviri",
+    "decoded": "OPEN zu"
+   },
+   {
+    "expert": "TOGGLE location",
+    "decoded": "TOGGLE atotototototototototi"
+   },
+   {
+    "expert": "BACK",
+    "decoded": "TOGGLE autoton"
+   },
+   {
+    "expert": "OPEN zumuvi",
+    "decoded": "OPEN vizu"
+   },
+   {
+    "expert": "OPEN pazuri",
+    "decoded": "OPEN zuba"
+   },
+   {
+    "expert": "OPEN vitene",
+    "decoded": "OPEN riri"
+   },
+   {
+    "expert": "CUT lomuko.jpg",
+    "decoded": "CUT vi.txt"
+   },
+   {
+    "expert": "HOME",
+    "decoded": "HOME"
+   },
+   {
+    "expert": "OPEN zuzuri",
+    "decoded": "OPEN vi"
+   },
+   {
+    "expert": "OPEN dobate",
+    "decoded": "OPEN zuzuzu"
+   },
+   {
+    "expert": "OPEN munene",
+    "decoded": "PASTE"
+   }
+  ]
+ },
+ "text-2m-s1": {
+  "states": 615,
+  "teacher_forced_loss": 0.6398105263710022,
+  "teacher_forced_char_acc": 0.783813100482956,
+  "teacher_forced_exact": 0.18536585365853658,
+  "greedy_step_acc": 0.183739837398374,
+  "greedy_noop_rate": 0.7317073170731707,
+  "examples": [
+   {
+    "expert": "OPEN tezuba",
+    "decoded": "OPEN baba"
+   },
+   {
+    "expert": "OPEN papa",
+    "decoded": "OPEN baba"
+   },
+   {
+    "expert": "OPEN lovi",
+    "decoded": "OPEN bababa"
+   },
+   {
+    "expert": "DELETE balori.mp3",
+    "decoded": "DELETE te.mp3"
+   },
+   {
+    "expert": "OPEN baviri",
+    "decoded": "OPEN zuvi"
+   },
+   {
+    "expert": "TOGGLE location",
+    "decoded": "TOGGLE autiotirototototiotirote"
+   },
+   {
+    "expert": "BACK",
+    "decoded": "BACK"
+   },
+   {
+    "expert": "OPEN zumuvi",
+    "decoded": "OPEN rivi"
+   },
+   {
+    "expert": "OPEN pazuri",
+    "decoded": "OPEN nerivi"
+   },
+   {
+    "expert": "OPEN vitene",
+    "decoded": "OPEN rivi"
+   },
+   {
+    "expert": "CUT lomuko.jpg",
+    "decoded": "CUT te.jpg"
+   },
+   {
+    "expert": "HOME",
+    "decoded": "HOME"
+   },
+   {
+    "expert": "OPEN zuzuri",
+    "decoded": "OPEN vivi"
+   },
+   {
+    "expert": "OPEN dobate",
+    "decoded": "OPEN zulo"
+   },
+   {
+    "expert": "OPEN munene",
+    "decoded": "PASTE"
+   }
+  ]
+ },
+ "text-2m-s2": {
+  "states": 615,
+  "teacher_forced_loss": 0.5668255865573884,
+  "teacher_forced_char_acc": 0.8086017858406747,
+  "teacher_forced_exact": 0.17560975609756097,
+  "greedy_step_acc": 0.17398373983739837,
+  "greedy_noop_rate": 0.7560975609756098,
+  "examples": [
+   {
+    "expert": "OPEN tezuba",
+    "decoded": "OPEN tezuba"
+   },
+   {
+    "expert": "OPEN papa",
+    "decoded": "OPEN tekozu"
+   },
+   {
+    "expert": "OPEN lovi",
+    "decoded": "OPEN balolo"
+   },
+   {
+    "expert": "DELETE balori.mp3",
+    "decoded": "DELETE tete.mp3"
+   },
+   {
+    "expert": "OPEN baviri",
+    "decoded": "OPEN zuvizu"
+   },
+   {
+    "expert": "TOGGLE location",
+    "decoded": "TOGLE loton"
+   },
+   {
+    "expert": "BACK",
+    "decoded": "BACK"
+   },
+   {
+    "expert": "OPEN zumuvi",
+    "decoded": "OPEN vizuzu"
+   },
+   {
+    "expert": "OPEN pazuri",
+    "decoded": "OPEN nekozu"
+   },
+   {
+    "expert": "OPEN vitene",
+    "decoded": "OPEN vivivi"
+   },
+   {
+    "expert": "CUT lomuko.jpg",
+    "decoded": "CUT telo.jpg"
+   },
+   {
+    "expert": "HOME",
+    "decoded": "HOME"
+   },
+   {
+    "expert": "OPEN zuzuri",
+    "decoded": "OPEN zuvizu"
+   },
+   {
+    "expert": "OPEN dobate",
+    "decoded": "OPEN zuzuzu"
+   },
+   {
+    "expert": "OPEN munene",
+    "decoded": "OPEN koko"
+   }
+  ]
+ }
+}

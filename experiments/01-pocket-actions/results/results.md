@@ -1,12 +1,12 @@
 # Results: experiment 01
 
-seed 0 · quick False · GPU NVIDIA GeForce RTX 4080 SUPER · torch 2.5.1+cu124 · 500 tasks per split · GPU training 4.57 min · python 3.12.10 · numpy 2.1.3 · peak RAM 0.00 GB · run.py 35 s
+seed 0 · quick False · GPU NVIDIA GeForce RTX 4080 SUPER · torch 2.5.1+cu124 · 500 tasks per split · GPU training 4.57 min · python 3.12.10 · numpy 2.1.3 · peak RAM 0.07 GB · run.py 63 s
 
 **Verdict: INCONCLUSIVE** (2/5 criteria)
 
 | # | Criterion | Value | Threshold | Result |
 | --- | --- | --- | --- | --- |
-| C1 | Budget: kept models, GPU training time, eval RAM, CPU ms/decision (5M model) | 70.0 MB, 4.6 min, 0.00 GB, 3.5 ms | <= 50 MB, <= 10 min, <= 2 GB, <= 10 ms | FAIL |
+| C1 | Budget: kept models, GPU training time, eval RAM, CPU ms/decision (5M model) | 70.0 MB, 4.6 min, 0.07 GB, 6.8 ms | <= 50 MB, <= 10 min, <= 2 GB, <= 10 ms | FAIL |
 | C2 | Learns the job: cue-2m success, in-distribution | 84.9% ± 1.3% | >= 90% | FAIL |
 | C3 | Generalises to unseen apps: cue-2m success | 86.8% ± 1.4% (keyword 30.6%) | >= 70% and >= keyword + 25 pts | PASS |
 | C4 | Chains skills: cue-2m success, tasks with 2x the sub-goals | 5.3% ± 0.5% | >= 60% | FAIL |
