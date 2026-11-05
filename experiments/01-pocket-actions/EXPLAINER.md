@@ -35,7 +35,16 @@ Choices you might disagree with:
 
 ## 4. What we found
 
-_Filled in after the GPU run: the verdict, which criteria passed, the size curve, and what failed._
+**Verdict: INCONCLUSIVE, 2 of 5 criteria passed, with a ✨ INTRIGUING note.** Training took 4.6 minutes on the RTX 4080 SUPER.
+
+- **It generalises.** On apps it never saw, the 2M model completes 87% of tasks. Keyword matching manages 31% and random clicking 1%. This was the core test (C3), and it passed.
+- **Tiny is enough.** A 25K-parameter model (100 KB, smaller than a photo) gets 82%. All sizes from 25K to 2M land between 82% and 88%. That's the intriguing part: the rules of operating these apps fit in about 100 KB.
+- **No language beats language.** A same-size model that reads the screen as text and writes its answer as text completes 0% of tasks (C5 passed by 87 points). A diagnostic shows why. It gets the verb right but misspells names it has never seen ("OPEN tezuba" comes out as "OPEN ba"), so it only gets about 1 step in 5 exactly right. Pointing at an element never needs spelling.
+- **What failed:**
+    - Long tasks (C4): 5%, against a 60% bar. The likely cause is that each instruction word carries an absolute clause number, and long instructions reach numbers training rarely or never covered.
+    - Familiar layouts (C2): 85%, against a 90% bar. That's close, and limited by 20 seconds of training.
+    - Size (C1): the checkpoints were saved at full precision and total 70 MB, against a 50 MB limit. An 8-bit copy scored exactly the same, so the fix is easy, but the verdict counts what was actually saved.
+- **Controls behaved.** Given another task's instruction, the model completes 0% (it really reads the prompt). With 1.5x more clutter on screen, it still completes 79%.
 
 ## 5. Why it matters
 
