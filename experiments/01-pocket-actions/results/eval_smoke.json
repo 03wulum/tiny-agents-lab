@@ -1,0 +1,100 @@
+{
+ "gpu": "NVIDIA GeForce RTX 4080 SUPER",
+ "torch": "2.5.1+cu124",
+ "smoke": true,
+ "runs": {
+  "cue-20k": {
+   "params": 24825,
+   "steps": 443,
+   "train_seconds": 5.0,
+   "wall_seconds": 9.3,
+   "bytes": 111280,
+   "examples": 13896
+  },
+  "cue-2m-s0": {
+   "params": 2099913,
+   "steps": 135,
+   "train_seconds": 5.1,
+   "wall_seconds": 9.8,
+   "bytes": 8418180,
+   "examples": 15281
+  },
+  "text-2m-s0": {
+   "params": 2026498,
+   "steps": 95,
+   "train_seconds": 5.2,
+   "wall_seconds": 11.7,
+   "bytes": 8121062,
+   "examples": 6995
+  }
+ },
+ "demo_seconds": 1.3,
+ "train_minutes_total": 0.51,
+ "success": {
+  "cue-20k": {
+   "id": 0.45,
+   "unseen_apps": 0.35,
+   "long": 0.0,
+   "wording": 0.15
+  },
+  "cue-2m-s0": {
+   "id": 0.3,
+   "unseen_apps": 0.25,
+   "long": 0.0,
+   "wording": 0.1
+  },
+  "text-2m-s0": {
+   "id": 0.0,
+   "unseen_apps": 0.0,
+   "long": 0.0,
+   "wording": 0.0
+  },
+  "keyword": {
+   "id": 0.4,
+   "unseen_apps": 0.3,
+   "long": 0.0,
+   "wording": 0.2
+  },
+  "random": {
+   "id": 0.0,
+   "unseen_apps": 0.05,
+   "long": 0.0,
+   "wording": 0.0
+  },
+  "control_blind_prompt": {
+   "id": 0.0,
+   "unseen_apps": 0.0
+  },
+  "control_random_weights": {
+   "id": 0.0,
+   "unseen_apps": 0.0
+  },
+  "perturb_int8_cue-2m-s0": {
+   "id": 0.3,
+   "unseen_apps": 0.25,
+   "long": 0.0,
+   "wording": 0.1,
+   "bytes": 2167976
+  },
+  "perturb_clutter_cue-2m-s0": {
+   "unseen_apps": 0.3
+  },
+  "perturb_clutter_keyword": {
+   "unseen_apps": 0.4
+  },
+  "perturb_bconly_cue-2m-s0": {
+   "id": 0.4,
+   "unseen_apps": 0.4,
+   "long": 0.0,
+   "wording": 0.0
+  }
+ },
+ "eval_seconds": 14.4,
+ "n_eval": 20,
+ "checkpoint_bytes": {
+  "cue-20k.npz": 111280,
+  "cue-2m-s0-bconly.npz": 8418180,
+  "cue-2m-s0.npz": 8418180,
+  "text-2m-s0.npz": 8121062
+ }
+}

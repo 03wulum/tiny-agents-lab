@@ -6,12 +6,12 @@ Tiny on-device agents: models of 50 MB or less that act inside apps (pick, move,
 
 | # | Goal | Verdict | Criteria | Finding in one line | |
 | --- | --- | --- | --- | --- | --- |
-| 01 | Finish multi-step tasks in phone apps never seen before, with a model of 2M parameters or less | Pending (training next) | 0/5 | Keyword baseline: 28% on unseen apps, random: 1% | [details](experiments/01-pocket-actions) |
+| 01 | Finish multi-step tasks in phone apps never seen before, with a model of 2M parameters or less | INCONCLUSIVE ✨ INTRIGUING | 2/5 | A 25K-parameter (100 KB) model completes 82% of tasks in unseen apps (keyword 31%); long tasks fail (5%) | [details](experiments/01-pocket-actions) |
 
 ## How this repo works
 
 - Every experiment has pass/fail criteria fixed before any training ([SOP](docs/SOP.md)).
-- Training runs on one NVIDIA GPU in 15 minutes or less. Evaluation and CI run on any CPU.
+- Training runs on one NVIDIA GPU, one experiment at a time, in about 5 minutes (never more than 10). Evaluation and CI run on any CPU.
 - `python run_all.py` evaluates everything and prints one verdict table.
 
 ## License

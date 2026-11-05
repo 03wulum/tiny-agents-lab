@@ -1,0 +1,205 @@
+{
+ "gpu": "NVIDIA GeForce RTX 4080 SUPER",
+ "torch": "2.5.1+cu124",
+ "smoke": false,
+ "runs": {
+  "cue-20k": {
+   "params": 24825,
+   "steps": 793,
+   "train_seconds": 10.0,
+   "wall_seconds": 13.9,
+   "bytes": 111280,
+   "examples": 221812
+  },
+  "cue-100k": {
+   "params": 107689,
+   "steps": 647,
+   "train_seconds": 10.0,
+   "wall_seconds": 14.1,
+   "bytes": 446008,
+   "examples": 221430
+  },
+  "cue-500k": {
+   "params": 579945,
+   "steps": 496,
+   "train_seconds": 15.1,
+   "wall_seconds": 19.2,
+   "bytes": 2338304,
+   "examples": 221740
+  },
+  "cue-2m-s0": {
+   "params": 2099913,
+   "steps": 357,
+   "train_seconds": 20.1,
+   "wall_seconds": 24.5,
+   "bytes": 8418180,
+   "examples": 221805
+  },
+  "cue-2m-s1": {
+   "params": 2099913,
+   "steps": 357,
+   "train_seconds": 20.1,
+   "wall_seconds": 24.5,
+   "bytes": 8418180,
+   "examples": 221869
+  },
+  "cue-2m-s2": {
+   "params": 2099913,
+   "steps": 356,
+   "train_seconds": 20.1,
+   "wall_seconds": 24.6,
+   "bytes": 8418180,
+   "examples": 222205
+  },
+  "cue-5m": {
+   "params": 5214985,
+   "steps": 243,
+   "train_seconds": 25.3,
+   "wall_seconds": 30.1,
+   "bytes": 20885012,
+   "examples": 222574
+  },
+  "text-2m-s0": {
+   "params": 2026498,
+   "steps": 406,
+   "train_seconds": 30.2,
+   "wall_seconds": 39.9,
+   "bytes": 8121062,
+   "examples": 217679
+  },
+  "text-2m-s1": {
+   "params": 2026498,
+   "steps": 410,
+   "train_seconds": 30.2,
+   "wall_seconds": 44.9,
+   "bytes": 8121062,
+   "examples": 217537
+  },
+  "text-2m-s2": {
+   "params": 2026498,
+   "steps": 531,
+   "train_seconds": 30.1,
+   "wall_seconds": 38.3,
+   "bytes": 8121062,
+   "examples": 217805
+  }
+ },
+ "demo_seconds": 50.4,
+ "train_minutes_total": 4.57,
+ "success": {
+  "cue-20k": {
+   "id": 0.838,
+   "unseen_apps": 0.816,
+   "long": 0.054,
+   "wording": 0.242
+  },
+  "cue-100k": {
+   "id": 0.872,
+   "unseen_apps": 0.882,
+   "long": 0.058,
+   "wording": 0.274
+  },
+  "cue-500k": {
+   "id": 0.87,
+   "unseen_apps": 0.874,
+   "long": 0.046,
+   "wording": 0.294
+  },
+  "cue-2m-s0": {
+   "id": 0.852,
+   "unseen_apps": 0.882,
+   "long": 0.054,
+   "wording": 0.264
+  },
+  "cue-2m-s1": {
+   "id": 0.86,
+   "unseen_apps": 0.854,
+   "long": 0.058,
+   "wording": 0.294
+  },
+  "cue-2m-s2": {
+   "id": 0.834,
+   "unseen_apps": 0.868,
+   "long": 0.048,
+   "wording": 0.304
+  },
+  "cue-5m": {
+   "id": 0.752,
+   "unseen_apps": 0.812,
+   "long": 0.04,
+   "wording": 0.308
+  },
+  "text-2m-s0": {
+   "id": 0.0,
+   "unseen_apps": 0.0,
+   "long": 0.0,
+   "wording": 0.0
+  },
+  "text-2m-s1": {
+   "id": 0.0,
+   "unseen_apps": 0.0,
+   "long": 0.0,
+   "wording": 0.0
+  },
+  "text-2m-s2": {
+   "id": 0.0,
+   "unseen_apps": 0.0,
+   "long": 0.0,
+   "wording": 0.0
+  },
+  "keyword": {
+   "id": 0.272,
+   "unseen_apps": 0.306,
+   "long": 0.006,
+   "wording": 0.246
+  },
+  "random": {
+   "id": 0.004,
+   "unseen_apps": 0.008,
+   "long": 0.0,
+   "wording": 0.004
+  },
+  "control_blind_prompt": {
+   "id": 0.0,
+   "unseen_apps": 0.0
+  },
+  "control_random_weights": {
+   "id": 0.004,
+   "unseen_apps": 0.002
+  },
+  "perturb_int8_cue-2m-s0": {
+   "id": 0.848,
+   "unseen_apps": 0.882,
+   "long": 0.056,
+   "wording": 0.264,
+   "bytes": 2167976
+  },
+  "perturb_clutter_cue-2m-s0": {
+   "unseen_apps": 0.79
+  },
+  "perturb_clutter_keyword": {
+   "unseen_apps": 0.292
+  },
+  "perturb_bconly_cue-2m-s0": {
+   "id": 0.804,
+   "unseen_apps": 0.822,
+   "long": 0.058,
+   "wording": 0.3
+  }
+ },
+ "eval_seconds": 576.2,
+ "n_eval": 500,
+ "checkpoint_bytes": {
+  "cue-100k.npz": 446008,
+  "cue-20k.npz": 111280,
+  "cue-2m-s0-bconly.npz": 8418180,
+  "cue-2m-s0.npz": 8418180,
+  "cue-2m-s1.npz": 8418180,
+  "cue-2m-s2.npz": 8418180,
+  "cue-500k.npz": 2338304,
+  "cue-5m.npz": 20885012,
+  "text-2m-s0.npz": 8121062,
+  "text-2m-s1.npz": 8121062,
+  "text-2m-s2.npz": 8121062
+ }
+}
