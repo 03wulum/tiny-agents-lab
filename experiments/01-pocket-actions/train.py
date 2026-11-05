@@ -183,8 +183,12 @@ class BatchedText:
     @torch.no_grad()
     def act(self, phones, states, chunk=64):
         if len(phones) > chunk:
-            return [a for i in range(0, len(phones), chunk)
-                    for a in self.act(phones[i:i + chunk], states[i:i + chunk], chunk)]
+            acts, raw = [], []
+            for i in range(0, len(phones), chunk):
+                acts += self.act(phones[i:i + chunk], states[i:i + chunk], chunk)
+                raw += self.last_raw
+            self.last_raw = raw
+            return acts
         prompts = [encode_text(p, s)[0] for p, s in zip(phones, states)]
         T = max(len(x) for x in prompts)
         ids = torch.zeros((len(prompts), T), dtype=torch.long, device=self.device)
@@ -202,9 +206,10 @@ class BatchedText:
             if bool((torch.stack(out, 1) == EOS).any(1).all()):
                 break
         out = torch.stack(out, 1).tolist()
-        acts = []
+        acts, self.last_raw = [], []
         for p, o in zip(phones, out):
             o = o[:o.index(EOS)] if EOS in o else o
+            self.last_raw.append("".join(chr(i) if i < 128 else f"<{i}>" for i in o))
             acts.append(parse_text_action(p, o)[0])
         return acts
 

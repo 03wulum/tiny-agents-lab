@@ -30,18 +30,25 @@ def peak_ram_gb():
         import resource
         r = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
         return r / (2 ** 30 if sys.platform == "darwin" else 2 ** 20)
-    except ImportError:  # Windows
+    except ImportError:  # Windows: peak working set via K32GetProcessMemoryInfo
         try:
             import ctypes
             from ctypes import wintypes
 
             class PMC(ctypes.Structure):
-                _fields_ = [("cb", wintypes.DWORD), ("PageFaultCount", wintypes.DWORD)] + \
-                           [(n, ctypes.c_size_t) for n in ("PeakWorkingSetSize", "WorkingSetSize", "a", "b", "c", "d",
-                                                           "PagefileUsage", "PeakPagefileUsage")]
+                _fields_ = [("cb", wintypes.DWORD), ("PageFaultCount", wintypes.DWORD),
+                            ("PeakWorkingSetSize", ctypes.c_size_t), ("WorkingSetSize", ctypes.c_size_t),
+                            ("QuotaPeakPagedPoolUsage", ctypes.c_size_t), ("QuotaPagedPoolUsage", ctypes.c_size_t),
+                            ("QuotaPeakNonPagedPoolUsage", ctypes.c_size_t), ("QuotaNonPagedPoolUsage", ctypes.c_size_t),
+                            ("PagefileUsage", ctypes.c_size_t), ("PeakPagefileUsage", ctypes.c_size_t)]
+            k32 = ctypes.WinDLL("kernel32", use_last_error=True)
+            k32.GetCurrentProcess.restype = wintypes.HANDLE
+            k32.K32GetProcessMemoryInfo.argtypes = [wintypes.HANDLE, ctypes.POINTER(PMC), wintypes.DWORD]
+            k32.K32GetProcessMemoryInfo.restype = wintypes.BOOL
             c = PMC()
-            c.cb = ctypes.sizeof(c)
-            ctypes.windll.psapi.GetProcessMemoryInfo(ctypes.windll.kernel32.GetCurrentProcess(), ctypes.byref(c), c.cb)
+            c.cb = ctypes.sizeof(PMC)
+            if not k32.K32GetProcessMemoryInfo(k32.GetCurrentProcess(), ctypes.byref(c), c.cb):
+                return float("nan")
             return c.PeakWorkingSetSize / 2 ** 30
         except Exception:
             return float("nan")
@@ -133,8 +140,7 @@ def table(rows):
 
 def clean():
     freed = 0
-    targets = [HERE / "__pycache__", HERE / ".pytest_cache", RESULTS / "eval_smoke.json",
-               RESULTS / "train_log_smoke.txt", CKPT / "cue-2m-s0-bconly.npz"]
+    targets = [HERE / "__pycache__", HERE / ".pytest_cache", CKPT / "cue-2m-s0-bconly.npz"]
     for t in targets:
         if t.is_dir():
             freed += sum(f.stat().st_size for f in t.rglob("*") if f.is_file())
