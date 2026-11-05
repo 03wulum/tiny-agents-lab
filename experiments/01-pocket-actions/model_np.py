@@ -126,7 +126,8 @@ class CueAgent:
     def __call__(self, phone, task):
         if task is not self.task:
             self.task = task
-            self.cs = CueState(self.prompt_for(task) if self.prompt_for else task.prompt)
+            self.cs = CueState(self.prompt_for(task) if self.prompt_for else task.prompt,
+                               self.cfg.get("relative", False))
         enc, els = encode_cue(phone, self.cs)
         b = collate([enc])
         logits = cue_forward(self.cfg, self.P, b, self.no_match)[0].reshape(-1)

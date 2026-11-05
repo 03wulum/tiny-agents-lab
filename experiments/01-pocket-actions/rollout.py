@@ -8,9 +8,9 @@ from pocketos import SPLITS, expert_action, make_task, optimal_steps, split_seed
 
 
 # ------------------------------------------------------------ data ----
-def _expert_episode(seed):
+def _expert_episode(seed, relative=False):
     phone, task = make_task(seed, **SPLITS["train"])
-    cs, ts = CueState(task.prompt), TextState(task.prompt)
+    cs, ts = CueState(task.prompt, relative), TextState(task.prompt)
     cue, text = [], []
     while not task_done(phone, task):
         verb, el = expert_action(phone, task)
@@ -24,11 +24,11 @@ def _expert_episode(seed):
     return cue, text
 
 
-def make_demos(n_episodes, offset=0, chunk=1000):
+def make_demos(n_episodes, offset=0, chunk=1000, relative=False):
     """Yield (cue_samples, text_samples) for chunks of expert episodes. Single process, low RAM."""
     seeds = list(split_seeds("train", n_episodes, offset))
     for i in range(0, len(seeds), chunk):
-        eps = [_expert_episode(sd) for sd in seeds[i:i + chunk]]
+        eps = [_expert_episode(sd, relative) for sd in seeds[i:i + chunk]]
         yield [x for c, _ in eps for x in c], [x for _, t in eps for x in t]
 
 
@@ -45,7 +45,7 @@ class Single:
         return [s(p, s.task_ref) for p, s in zip(phones, states)]
 
 
-def rollout(policy, seeds, split, max_factor=2.0, collect=False, **overrides):
+def rollout(policy, seeds, split, max_factor=2.0, collect=False, relative=False, **overrides):
     """Run many episodes in lockstep. Returns success list (+ expert-labelled states if collect)."""
     kw = {**SPLITS[split], **overrides}
     envs = []
@@ -56,7 +56,7 @@ def rollout(policy, seeds, split, max_factor=2.0, collect=False, **overrides):
         if isinstance(policy, Single):
             st.task_ref = task
         envs.append(dict(phone=phone, task=task, st=st, left=budget, ok=False, done=False,
-                         cs=CueState(task.prompt), ts=TextState(task.prompt)))
+                         cs=CueState(task.prompt, relative), ts=TextState(task.prompt)))
     labelled_cue, labelled_text = [], []
     while True:
         act = [e for e in envs if not e["done"]]

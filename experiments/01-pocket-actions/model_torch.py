@@ -51,9 +51,11 @@ class Block(nn.Module):
 
 
 class CuePolicy(nn.Module):
-    def __init__(self, d, layers, heads, loops=1, no_match=False):
+    def __init__(self, d, layers, heads, loops=1, no_match=False, relative=False):
         super().__init__()
         self.cfg = dict(kind="cue", d=d, layers=layers, heads=heads, loops=loops, no_match=no_match)
+        if relative:  # experiment 02: clause ids relative to the current clause (see features.CueState)
+            self.cfg["relative"] = True
         self.hash = nn.Embedding(H, d)
         self.role, self.clause, self.tick = nn.Embedding(3, d), nn.Embedding(MAX_CLAUSE, d), nn.Embedding(2, d)
         self.kind, self.ftype = nn.Embedding(len(KINDS), d), nn.Embedding(len(FTYPES) + 1, d)
@@ -123,8 +125,9 @@ def n_params(model):
     return sum(p.numel() for p in model.parameters())
 
 
-def save_npz(model, path):
-    sd = {k: v.detach().float().cpu().numpy() for k, v in model.state_dict().items()}
+def save_npz(model, path, dtype="float32"):
+    """Save weights + config. dtype="float16" halves the file (model_np.load casts back to float32)."""
+    sd = {k: v.detach().float().cpu().numpy().astype(dtype) for k, v in model.state_dict().items()}
     np.savez(path, config=np.array(json.dumps(model.cfg)), **sd)
 
 

@@ -7,6 +7,7 @@ Tiny on-device agents: models of 50 MB or less that act inside apps (pick, move,
 | # | Goal | Verdict | Criteria | Finding in one line | |
 | --- | --- | --- | --- | --- | --- |
 | 01 | Finish multi-step tasks in phone apps never seen before, with a model of 2M parameters or less | INCONCLUSIVE ✨ INTRIGUING | 2/5 | A 25K-parameter (100 KB) model completes 82% of tasks in unseen apps (keyword 31%); long tasks fail (5%) | [details](experiments/01-pocket-actions) |
+| 02 | Fix 01's long-task failure with a relative clause signal; float16 models | PENDING (GPU run queued) | - | Criteria pre-registered, same thresholds as 01 | [details](experiments/02-relative-clauses) |
 
 ## How this repo works
 

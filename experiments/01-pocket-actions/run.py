@@ -23,6 +23,7 @@ from pocketos import make_task, run_episode, split_seeds
 HERE = Path(__file__).parent
 CKPT, RESULTS = HERE / "checkpoints", HERE / "results"
 SPLITS = ["id", "unseen_apps", "long", "wording"]
+TITLE = "experiment 01"   # experiment 02 reuses this file with its own folders and title
 
 
 def peak_ram_gb():
@@ -185,7 +186,7 @@ def main():
     s = ev["success"]
     other = [f"| {k} | " + " | ".join(f"{100 * v[sp]:.1f}" if sp in v else "-" for sp in SPLITS) + " |"
              for k, v in s.items()]
-    md = ["# Results: experiment 01\n",
+    md = [f"# Results: {TITLE}\n",
           f"seed {args.seed} · quick {args.quick} · GPU {ev.get('gpu')} · torch {ev.get('torch')} · "
           f"{ev.get('n_eval')} tasks per split · GPU training {ev.get('train_minutes_total')} min · "
           f"python {sys.version.split()[0]} · numpy {np.__version__} · peak RAM {measured['ram_gb']:.2f} GB · "
