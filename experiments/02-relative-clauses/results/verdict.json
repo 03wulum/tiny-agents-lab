@@ -1,4 +1,68 @@
 {
- "verdict": "PENDING",
- "criteria_passed": "0/5"
+ "verdict": "PASS",
+ "criteria_passed": "5/5",
+ "criteria": [
+  {
+   "id": "C1",
+   "name": "Budget: kept models, GPU training time, eval RAM, CPU ms/decision (5M model)",
+   "value": "27.3 MB, 3.9 min, 0.07 GB, 3.8 ms",
+   "threshold": "<= 50 MB, <= 10 min, <= 2 GB, <= 10 ms",
+   "ok": true
+  },
+  {
+   "id": "C2",
+   "name": "Learns the job: cue-2m success, in-distribution",
+   "value": "91.1% \u00b1 0.7%",
+   "threshold": ">= 90%",
+   "ok": true
+  },
+  {
+   "id": "C3",
+   "name": "Generalises to unseen apps: cue-2m success",
+   "value": "91.6% \u00b1 2.1% (keyword 30.6%)",
+   "threshold": ">= 70% and >= keyword + 25 pts",
+   "ok": true
+  },
+  {
+   "id": "C4",
+   "name": "Chains skills: cue-2m success, tasks with 2x the sub-goals",
+   "value": "64.5% \u00b1 2.3%",
+   "threshold": ">= 60%",
+   "ok": true
+  },
+  {
+   "id": "C5",
+   "name": "No language needed: cue-2m minus text-2m, unseen apps",
+   "value": "+91.6 pts (text 0.0% \u00b1 0.0%)",
+   "threshold": ">= +15 pts",
+   "ok": true
+  }
+ ],
+ "negative_control": {
+  "id": "NC",
+  "name": "Negative control: cue-2m given another task's instruction, unseen apps",
+  "value": "0.0%",
+  "threshold": "must stay < 15%",
+  "ok": true
+ },
+ "cpu_check": {
+  "keyword": {
+   "id": 0.23,
+   "unseen_apps": 0.34,
+   "long": 0.02,
+   "wording": 0.21
+  },
+  "random": {
+   "id": 0.0,
+   "unseen_apps": 0.01,
+   "long": 0.0,
+   "wording": 0.01
+  },
+  "cue-2m-s0": {
+   "id": 0.93,
+   "unseen_apps": 0.89,
+   "long": 0.57,
+   "wording": 0.31
+  }
+ }
 }

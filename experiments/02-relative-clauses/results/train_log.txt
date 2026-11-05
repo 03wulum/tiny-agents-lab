@@ -1,0 +1,44 @@
+[08:54:53] GPU: NVIDIA GeForce RTX 4080 SUPER, 16.0 GB
+[08:55:49] generated 20000 expert episodes: 213759 decisions in 56.4s (simulator on CPU, stored on GPU)
+[08:55:55] cue-20k: phase 0 done, step 431, loss 0.033, 6s training
+[08:55:58] cue-20k: phase 1 done, step 568, loss 0.037, 7s training
+[08:56:01] cue-20k: phase 2 done, step 709, loss 0.038, 9s training
+[08:56:04] cue-20k: phase 3 done, step 851, loss 0.050, 10s training
+[08:56:10] cue-100k: phase 0 done, step 335, loss 0.028, 6s training
+[08:56:13] cue-100k: phase 1 done, step 432, loss 0.043, 7s training
+[08:56:16] cue-100k: phase 2 done, step 526, loss 0.030, 9s training
+[08:56:19] cue-100k: phase 3 done, step 624, loss 0.032, 10s training
+[08:56:27] cue-500k: phase 0 done, step 349, loss 0.032, 8s training
+[08:56:31] cue-500k: phase 1 done, step 445, loss 0.042, 11s training
+[08:56:34] cue-500k: phase 2 done, step 541, loss 0.040, 13s training
+[08:56:38] cue-500k: phase 3 done, step 638, loss 0.021, 15s training
+[08:56:54] cue-2m-s0: phase 0 done, step 375, loss 0.031, 17s training
+[08:57:01] cue-2m-s0: phase 1 done, step 476, loss 0.064, 21s training
+[08:57:07] cue-2m-s0: phase 2 done, step 591, loss 0.044, 26s training
+[08:57:13] cue-2m-s0: phase 3 done, step 714, loss 0.024, 30s training
+[08:57:39] cue-2m-s1: phase 0 done, step 139, loss 0.081, 26s training
+[08:57:45] cue-2m-s1: phase 1 done, step 226, loss 0.047, 31s training
+[08:57:51] cue-2m-s1: phase 2 done, step 311, loss 0.043, 35s training
+[08:57:57] cue-2m-s1: phase 3 done, step 392, loss 0.043, 40s training
+[08:58:14] cue-2m-s2: phase 0 done, step 292, loss 0.031, 17s training
+[08:58:20] cue-2m-s2: phase 1 done, step 373, loss 0.040, 21s training
+[08:58:26] cue-2m-s2: phase 2 done, step 454, loss 0.046, 26s training
+[08:58:32] cue-2m-s2: phase 3 done, step 535, loss 0.025, 30s training
+[08:58:46] cue-5m: phase 0 done, step 132, loss 0.071, 14s training
+[08:58:51] cue-5m: phase 1 done, step 169, loss 0.080, 18s training
+[08:58:57] cue-5m: phase 2 done, step 206, loss 0.055, 21s training
+[08:59:02] cue-5m: phase 3 done, step 243, loss 0.078, 25s training
+[08:59:19] text-2m-s0: phase 0 done, step 221, loss 0.791, 17s training
+[08:59:26] text-2m-s0: phase 1 done, step 283, loss 0.718, 21s training
+[08:59:33] text-2m-s0: phase 2 done, step 345, loss 0.693, 26s training
+[08:59:45] text-2m-s0: phase 3 done, step 407, loss 0.606, 30s training
+[08:59:45] total training time 3.92 min
+[08:59:57] eval cue-20k: {'id': 0.916, 'unseen_apps': 0.946, 'long': 0.702, 'wording': 0.222}
+[09:00:09] eval cue-100k: {'id': 0.902, 'unseen_apps': 0.92, 'long': 0.674, 'wording': 0.28}
+[09:00:22] eval cue-500k: {'id': 0.968, 'unseen_apps': 0.96, 'long': 0.798, 'wording': 0.26}
+[09:00:34] eval cue-2m-s0: {'id': 0.918, 'unseen_apps': 0.926, 'long': 0.64, 'wording': 0.306}
+[09:00:46] eval cue-2m-s1: {'id': 0.91, 'unseen_apps': 0.892, 'long': 0.624, 'wording': 0.258}
+[09:00:59] eval cue-2m-s2: {'id': 0.904, 'unseen_apps': 0.93, 'long': 0.67, 'wording': 0.224}
+[09:01:12] eval cue-5m: {'id': 0.902, 'unseen_apps': 0.924, 'long': 0.646, 'wording': 0.25}
+[09:03:41] eval text-2m-s0: {'id': 0.0, 'unseen_apps': 0.0, 'long': 0.0, 'wording': 0.0}
+[09:05:00] wrote eval.json; eval took 314.7s
