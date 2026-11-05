@@ -18,7 +18,7 @@
 ## What I found that the plan didn't predict
 
 - **Size barely matters here.** 25K, 100K, 500K and 2M parameters all land at 82-88% on unseen apps. The 5M model was slightly worse, because 25 seconds of training was too little for it. The rules of this world fit in about 100 KB.
-- **Long tasks break, and the cause is clear.** Training tasks have at most 3 clauses, so the embeddings for clauses 4-6 are never trained. The model fails as soon as an instruction runs past its third clause. A relative signal ("the first unfinished clause") would likely fix it, which is the obvious follow-up.
+- **Long tasks break.** The likely cause: each cue carries an absolute clause number. Training instructions have at most 3 sub-goals, so the higher clause numbers that long instructions reach are rarely or never trained. A relative signal ("the first unfinished clause") would probably fix it, and that's the obvious follow-up. Not yet verified.
 - **New wording hurts, as designed.** Unseen joiners ("after that", "next") stop the parser from splitting clauses, and success drops to about 28%.
 - **int8 costs nothing.** cue-2m at int8 (about 2 MB) scores the same as fp32. Storing the checkpoints as fp16 or int8 would have passed C1's size limit, but the threshold was measured on what was actually saved.
 
