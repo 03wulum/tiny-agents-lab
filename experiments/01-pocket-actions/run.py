@@ -197,7 +197,7 @@ def main():
           *other, "", "## Training runs\n", "| Run | Params | Steps | GPU seconds | Bytes |", "| --- | --- | --- | --- | --- |",
           *[f"| {k} | {v['params']:,} | {v['steps']} | {v['train_seconds']} | {v['bytes']:,} |" for k, v in ev["runs"].items()],
           "", "![success vs size](success_vs_size.png)", "", "![splits](splits.png)"]
-    (RESULTS / "results.md").write_text("\n".join(md) + "\n")
+    (RESULTS / "results.md").write_text("\n".join(md) + "\n", encoding="utf-8")
     (RESULTS / "verdict.json").write_text(json.dumps(
         {"verdict": verdict, "criteria_passed": passed, "criteria": rows, "negative_control": neg,
          "cpu_check": check}, indent=1, default=str))

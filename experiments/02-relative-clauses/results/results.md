@@ -1,16 +1,16 @@
 # Results: experiment 02 (relative clauses)
 
-seed 0 · quick False · GPU NVIDIA GeForce RTX 4080 SUPER · torch 2.5.1+cu124 · 500 tasks per split · GPU training 3.92 min · python 3.12.10 · numpy 2.1.3 · peak RAM 0.07 GB · run.py 31 s
+seed 0 Â· quick False Â· GPU NVIDIA GeForce RTX 4080 SUPER Â· torch 2.5.1+cu124 Â· 500 tasks per split Â· GPU training 3.92 min Â· python 3.12.10 Â· numpy 2.1.3 Â· peak RAM 0.07 GB Â· run.py 31 s
 
 **Verdict: PASS** (5/5 criteria)
 
 | # | Criterion | Value | Threshold | Result |
 | --- | --- | --- | --- | --- |
 | C1 | Budget: kept models, GPU training time, eval RAM, CPU ms/decision (5M model) | 27.3 MB, 3.9 min, 0.07 GB, 3.8 ms | <= 50 MB, <= 10 min, <= 2 GB, <= 10 ms | PASS |
-| C2 | Learns the job: cue-2m success, in-distribution | 91.1% ± 0.7% | >= 90% | PASS |
-| C3 | Generalises to unseen apps: cue-2m success | 91.6% ± 2.1% (keyword 30.6%) | >= 70% and >= keyword + 25 pts | PASS |
-| C4 | Chains skills: cue-2m success, tasks with 2x the sub-goals | 64.5% ± 2.3% | >= 60% | PASS |
-| C5 | No language needed: cue-2m minus text-2m, unseen apps | +91.6 pts (text 0.0% ± 0.0%) | >= +15 pts | PASS |
+| C2 | Learns the job: cue-2m success, in-distribution | 91.1% Â± 0.7% | >= 90% | PASS |
+| C3 | Generalises to unseen apps: cue-2m success | 91.6% Â± 2.1% (keyword 30.6%) | >= 70% and >= keyword + 25 pts | PASS |
+| C4 | Chains skills: cue-2m success, tasks with 2x the sub-goals | 64.5% Â± 2.3% | >= 60% | PASS |
+| C5 | No language needed: cue-2m minus text-2m, unseen apps | +91.6 pts (text 0.0% Â± 0.0%) | >= +15 pts | PASS |
 | NC | Negative control: cue-2m given another task's instruction, unseen apps | 0.0% | must stay < 15% | FAIL as expected |
 
 ## Task success by model and split (%)

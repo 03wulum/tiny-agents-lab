@@ -1,6 +1,6 @@
 # Explainer: teaching the tiny action model to keep its place
 
-About a 3-minute read. Read [experiment 01's explainer](../01-pocket-actions/EXPLAINER.md) first for how the model works. The results section gets filled in after the GPU run.
+About a 3-minute read. Read [experiment 01's explainer](../01-pocket-actions/EXPLAINER.md) first for how the model works.
 
 ## 1. The problem from 01
 
@@ -28,7 +28,13 @@ As a check that the new signal is really the reason, we also run the trained mod
 
 ## 5. What we found
 
-Pending the GPU run.
+**Verdict: PASS, 5 of 5 criteria, with a ✨ INTRIGUING note.** Training took 3.9 minutes on the RTX 4080 SUPER.
+
+- **Long tasks fixed:** from 5% to 65% (bar: 60%). Everything else improved too: 91% on familiar layouts (01: 85%) and 92% on apps never seen (01: 87%).
+- **It's really the new tags:** with every note marked *doing now*, the same model completes 0% of long tasks.
+- **Tiny still wins:** the 25K-parameter model (62 KB) completes 95% of tasks in unseen apps and 70% of long ones. The 500K model is best of all, at 96% and 80%.
+- **Fits easily:** every model together is 27 MB at half precision (limit 50 MB). An 8-bit copy of the 2M model (2.2 MB) scores the same.
+- **What's still weak:** instructions joined with words the parser never saw ("after that", "next") succeed only 25-30% of the time, because the parser can't split them into notes. That's the next thing to fix.
 
 ## 6. Further reading
 
