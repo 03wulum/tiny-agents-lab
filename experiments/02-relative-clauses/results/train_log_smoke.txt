@@ -1,0 +1,19 @@
+[08:53:48] GPU: NVIDIA GeForce RTX 4080 SUPER, 16.0 GB
+[08:53:48] generated 300 expert episodes: 3075 decisions in 0.7s (simulator on CPU, stored on GPU)
+[08:53:53] cue-20k: phase 0 done, step 149, loss 0.173, 3s training
+[08:53:55] cue-20k: phase 1 done, step 225, loss 0.339, 4s training
+[08:53:58] cue-20k: phase 2 done, step 298, loss 0.306, 4s training
+[08:54:00] cue-20k: phase 3 done, step 369, loss 0.299, 5s training
+[08:54:03] cue-2m-s0: phase 0 done, step 75, loss 0.219, 3s training
+[08:54:06] cue-2m-s0: phase 1 done, step 92, loss 0.590, 4s training
+[08:54:09] cue-2m-s0: phase 2 done, step 114, loss 0.461, 4s training
+[08:54:11] cue-2m-s0: phase 3 done, step 136, loss 0.426, 5s training
+[08:54:14] text-2m-s0: phase 0 done, step 55, loss 1.486, 3s training
+[08:54:17] text-2m-s0: phase 1 done, step 72, loss 1.148, 4s training
+[08:54:19] text-2m-s0: phase 2 done, step 89, loss 1.018, 4s training
+[08:54:22] text-2m-s0: phase 3 done, step 106, loss 0.851, 5s training
+[08:54:22] total training time 0.54 min
+[08:54:23] eval cue-20k: {'id': 0.45, 'unseen_apps': 0.4, 'long': 0.05, 'wording': 0.2}
+[08:54:24] eval cue-2m-s0: {'id': 0.6, 'unseen_apps': 0.4, 'long': 0.05, 'wording': 0.15}
+[08:54:31] eval text-2m-s0: {'id': 0.0, 'unseen_apps': 0.0, 'long': 0.0, 'wording': 0.0}
+[08:54:37] wrote eval_smoke.json; eval took 14.9s

@@ -32,22 +32,33 @@ N_ST_FEATS = 6
 VERB_ID = {v: i for i, v in enumerate(VERBS)}
 SCREEN_VERBS = ("BACK", "HOME", "PASTE")
 EFFECT_VERBS = {"CUT", "DELETE", "SHARE", "SEND", "TOGGLE", "PASTE"}
+TERMINAL_VERBS = {"PASTE", "DELETE", "SEND", "TOGGLE"}  # the last action of each kind of sub-goal
 
 
 def word_hash(w: str) -> int:
     return 1 + zlib.crc32(w.encode()) % (H - 1)
 
 
-def parse_cues(prompt: str):
-    """Return (words, role ids, clause ids) for an instruction."""
+def parse_cues(prompt: str, fixed=False):
+    """Return (words, role ids, clause ids) for an instruction.
+
+    fixed=False is experiment 01's parser: every joiner word starts a new clause ("and then"
+    counts twice) and ids are clipped at MAX_CLAUSE - 1. fixed=True (experiment 02) starts a new
+    clause only after a non-joiner word and does not clip (ids are made relative later)."""
     words = re.findall(r"[a-z0-9]+(?:\.[a-z0-9]+)?", prompt.lower())
     roles, clauses = [], []
-    clause, role = 0, ROLE["other"]
+    clause, role, content = 0, ROLE["other"], False
     for w in words:
         if w in JOIN_WORDS:
-            clause, role = min(clause + 1, MAX_CLAUSE - 1), ROLE["other"]
-        elif w in ROLE_WORDS:
-            role = ROLE[ROLE_WORDS[w]]
+            if fixed:
+                if content:
+                    clause, role, content = clause + 1, ROLE["other"], False
+            else:
+                clause, role = min(clause + 1, MAX_CLAUSE - 1), ROLE["other"]
+        else:
+            content = True
+            if w in ROLE_WORDS:
+                role = ROLE[ROLE_WORDS[w]]
         roles.append(role)
         clauses.append(clause)
     return words, np.array(roles, np.int64), np.array(clauses, np.int64)
@@ -60,30 +71,53 @@ def label_words(node) -> list:
 class CueState:
     """Per-episode agent memory: parsed cues, ticks and the previous verb."""
 
-    def __init__(self, prompt: str):
-        self.words, self.roles, self.clauses = parse_cues(prompt)
+    def __init__(self, prompt: str, relative: bool = False):
+        self.relative = relative
+        self.words, self.roles, self.clauses = parse_cues(prompt, fixed=relative)
         self.ids = np.array([word_hash(w) for w in self.words], np.int64)
         self.ticks = np.zeros(len(self.words), np.int64)
+        self.done = set()       # clauses finished by a terminal action (relative mode)
         self.prev = len(VERBS)  # "none"
 
     def _tick(self, words, role=None):
         words = set(words)
         hit = [i for i, w in enumerate(self.words)
-               if w in words and not self.ticks[i] and (role is None or self.roles[i] == role)]
+               if w in words and not self.ticks[i] and (role is None or self.roles[i] == role)
+               and self.clauses[i] not in self.done]  # done stays empty in 01's absolute mode
         if not hit:
-            return
+            return None
         c = min(self.clauses[i] for i in hit)
         for i in hit:
             if self.clauses[i] == c:
                 self.ticks[i] = 1
+        return int(c)
 
     def update(self, phone_before_cur, verb, el):
         """Call after choosing an action (before or after stepping; uses the pre-step screen)."""
         self.prev = VERB_ID[verb]
+        c = None
         if verb in ("CUT", "DELETE", "SHARE", "TOGGLE", "SEND") and el is not None:
-            self._tick(label_words(el), ROLE["dst"] if verb == "SEND" else None)
+            c = self._tick(label_words(el), ROLE["dst"] if verb == "SEND" else None)
         elif verb == "PASTE":
-            self._tick([phone_before_cur.label], ROLE["dst"])
+            c = self._tick([phone_before_cur.label], ROLE["dst"])
+        if verb in TERMINAL_VERBS and self.relative:
+            if c is None:  # target named by description ("the latest mov"): finish the current clause
+                c = self.current()
+            self.done.add(c)
+
+    def current(self):
+        """Lowest clause not yet finished (one past the last clause when all are finished)."""
+        n = int(self.clauses.max()) + 1 if len(self.clauses) else 0
+        return next((c for c in range(n) if c not in self.done), n)
+
+    def clause_feature(self):
+        """Clause ids fed to the model. Absolute (01) or relative to the current clause (02):
+        0 = finished, 1 = current (lowest unfinished), 2 = next, 3 = later."""
+        if not self.relative:
+            return self.clauses.copy()
+        rel = np.clip(self.clauses - self.current(), -1, 2) + 1
+        rel[np.isin(self.clauses, list(self.done))] = 0
+        return rel.astype(np.int64)
 
 
 def _rank_flags(elements):
@@ -145,7 +179,7 @@ def encode_cue(phone, cs: CueState):
         else:
             valid[1 + nc + index[id(e)], VERB_ID[v]] = True
     del wset
-    return dict(cue_id=cs.ids.copy(), cue_role=cs.roles.copy(), cue_clause=cs.clauses.copy(),
+    return dict(cue_id=cs.ids.copy(), cue_role=cs.roles.copy(), cue_clause=cs.clause_feature(),
                 cue_tick=cs.ticks.copy(), el_kind=kind, el_ftype=ftype, el_feat=ef,
                 match=match, st_feat=sf, path_match=pmatch, clip_match=cmatch,
                 prev=np.int64(cs.prev), valid=valid), els

@@ -45,6 +45,8 @@ RUNS = [  # Obi's rule: one training at a time, about 5 minutes in total, never 
 ]
 TRAIN_CAP_SECONDS = 330   # hard cap on total training wall time, including DAgger rollouts
 DAGGER_ROUNDS = 3
+RELATIVE = False          # experiment 02 sets True: fixed clause parser + relative clause ids
+SAVE_DTYPE = "float32"    # experiment 02 sets "float16"
 
 
 # --------------------------------------------------------- batches ----
@@ -156,15 +158,20 @@ def loss_fn(model, family, pack, idx):
 
 # ------------------------------------------------------- policies ----
 class BatchedCue:
-    def __init__(self, model, device, prompt_for=None):
+    def __init__(self, model, device, prompt_for=None, clause_blind=False):
         self.model, self.device, self.prompt_for = model, device, prompt_for
+        self.clause_blind = clause_blind  # control: every cue looks like it is in the current clause
 
     def start(self, task):
-        return CueState(self.prompt_for(task) if self.prompt_for else task.prompt)
+        return CueState(self.prompt_for(task) if self.prompt_for else task.prompt,
+                        self.model.cfg.get("relative", False))
 
     @torch.no_grad()
     def act(self, phones, states):
         encs = [encode_cue(p, s) for p, s in zip(phones, states)]
+        if self.clause_blind:
+            for e, _ in encs:
+                e["cue_clause"][:] = 1
         b = collate([e for e, _ in encs])
         Lc = b["cue_id"].shape[1]
         with torch.autocast("cuda", dtype=torch.bfloat16, enabled=self.device == "cuda"):
@@ -242,7 +249,7 @@ def train_run(name, family, size, seed, seconds, n_demos, extra, demos, device, 
             model.eval()
             n_ep = 200 if family == "cue" else 60
             seeds = split_seeds("train", n_ep, dagger_offset + ph * 10_000)
-            _, lc, lt = rollout(policy_cls(model, device), seeds, "train", collect=True)
+            _, lc, lt = rollout(policy_cls(model, device), seeds, "train", collect=True, relative=RELATIVE)
             data.add(lc if family == "cue" else lt)
             model.train()
         ts = time.time()
@@ -261,11 +268,11 @@ def train_run(name, family, size, seed, seconds, n_demos, extra, demos, device, 
             step += 1
         train_time += time.time() - ts
         if ph == 0 and name == "cue-2m-s0":
-            MT.save_npz(model, CKPT / "cue-2m-s0-bconly.npz")
+            MT.save_npz(model, CKPT / "cue-2m-s0-bconly.npz", SAVE_DTYPE)
         log(f"{name}: phase {ph} done, step {step}, loss {loss.item():.3f}, {train_time:.0f}s training")
     model.eval()
     path = CKPT / f"{name}.npz"
-    MT.save_npz(model, path)
+    MT.save_npz(model, path, SAVE_DTYPE)
     return model, dict(params=MT.n_params(model), steps=step, train_seconds=round(train_time, 1),
                        wall_seconds=round(time.time() - t0, 1), bytes=path.stat().st_size,
                        examples=len(data))
@@ -275,7 +282,8 @@ def train_run(name, family, size, seed, seconds, n_demos, extra, demos, device, 
 def load_cue(path, device):
     import model_np
     cfg, P = model_np.load(path)
-    m = MT.CuePolicy(cfg["d"], cfg["layers"], cfg["heads"], cfg["loops"], cfg.get("no_match", False))
+    m = MT.CuePolicy(cfg["d"], cfg["layers"], cfg["heads"], cfg["loops"], cfg.get("no_match", False),
+                     cfg.get("relative", False))
     m.load_state_dict({k: torch.tensor(v) for k, v in P.items()})
     return m.to(device).eval()
 
@@ -316,11 +324,13 @@ def evaluate(models, n, device, log):
         return other[task.seed]
 
     res["control_blind_prompt"] = {sp: score(BatchedCue(m, device, wrong_prompt), sp) for sp in ("id", "unseen_apps")}
-    rnd = build("cue", "2m", {}).to(device).eval()
+    rnd = build("cue", "2m", {"relative": True} if RELATIVE else {}).to(device).eval()
     res["control_random_weights"] = {sp: score(BatchedCue(rnd, device), sp) for sp in ("id", "unseen_apps")}
     q, qbytes = int8_copy(m, device)
     res["perturb_int8_cue-2m-s0"] = {sp: score(BatchedCue(q, device), sp) for sp in splits}
     res["perturb_int8_cue-2m-s0"]["bytes"] = qbytes
+    if RELATIVE:  # does the model use the relative clause signal? (all cues shown as 'current')
+        res["control_clause_blind"] = {sp: score(BatchedCue(m, device, clause_blind=True), sp) for sp in splits}
     res["perturb_clutter_cue-2m-s0"] = {"unseen_apps": score(BatchedCue(m, device), "unseen_apps", clutter=1.5)}
     res["perturb_clutter_keyword"] = {"unseen_apps": score(Single(lambda: KeywordAgent(0)), "unseen_apps", clutter=1.5)}
     bc = CKPT / "cue-2m-s0-bconly.npz"
@@ -362,7 +372,7 @@ def main():
         n_demo = max(r[5] for r in runs)
         demos = {"cue": CuePack(device), "text": TextPack(device)}
         bounds = []
-        for cue_part, text_part in make_demos(n_demo):
+        for cue_part, text_part in make_demos(n_demo, relative=RELATIVE):
             demos["cue"].add(cue_part)
             demos["text"].add(text_part)
             bounds.append((len(demos["cue"]), len(demos["text"])))

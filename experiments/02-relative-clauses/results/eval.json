@@ -1,0 +1,181 @@
+{
+ "gpu": "NVIDIA GeForce RTX 4080 SUPER",
+ "torch": "2.5.1+cu124",
+ "smoke": false,
+ "runs": {
+  "cue-20k": {
+   "params": 24825,
+   "steps": 851,
+   "train_seconds": 10.0,
+   "wall_seconds": 14.1,
+   "bytes": 61702,
+   "examples": 220923
+  },
+  "cue-100k": {
+   "params": 107689,
+   "steps": 624,
+   "train_seconds": 10.0,
+   "wall_seconds": 14.5,
+   "bytes": 230702,
+   "examples": 220937
+  },
+  "cue-500k": {
+   "params": 579945,
+   "steps": 638,
+   "train_seconds": 15.1,
+   "wall_seconds": 19.3,
+   "bytes": 1178486,
+   "examples": 220688
+  },
+  "cue-2m-s0": {
+   "params": 2099913,
+   "steps": 714,
+   "train_seconds": 30.1,
+   "wall_seconds": 34.7,
+   "bytes": 4218426,
+   "examples": 220979
+  },
+  "cue-2m-s1": {
+   "params": 2099913,
+   "steps": 392,
+   "train_seconds": 39.9,
+   "wall_seconds": 44.5,
+   "bytes": 4218426,
+   "examples": 221011
+  },
+  "cue-2m-s2": {
+   "params": 2099913,
+   "steps": 535,
+   "train_seconds": 30.2,
+   "wall_seconds": 34.8,
+   "bytes": 4218426,
+   "examples": 221206
+  },
+  "cue-5m": {
+   "params": 5214985,
+   "steps": 243,
+   "train_seconds": 25.2,
+   "wall_seconds": 30.3,
+   "bytes": 10455114,
+   "examples": 221434
+  },
+  "text-2m-s0": {
+   "params": 2026498,
+   "steps": 407,
+   "train_seconds": 30.2,
+   "wall_seconds": 42.8,
+   "bytes": 4068066,
+   "examples": 217679
+  }
+ },
+ "demo_seconds": 56.4,
+ "train_minutes_total": 3.92,
+ "success": {
+  "cue-20k": {
+   "id": 0.916,
+   "unseen_apps": 0.946,
+   "long": 0.702,
+   "wording": 0.222
+  },
+  "cue-100k": {
+   "id": 0.902,
+   "unseen_apps": 0.92,
+   "long": 0.674,
+   "wording": 0.28
+  },
+  "cue-500k": {
+   "id": 0.968,
+   "unseen_apps": 0.96,
+   "long": 0.798,
+   "wording": 0.26
+  },
+  "cue-2m-s0": {
+   "id": 0.918,
+   "unseen_apps": 0.926,
+   "long": 0.64,
+   "wording": 0.306
+  },
+  "cue-2m-s1": {
+   "id": 0.91,
+   "unseen_apps": 0.892,
+   "long": 0.624,
+   "wording": 0.258
+  },
+  "cue-2m-s2": {
+   "id": 0.904,
+   "unseen_apps": 0.93,
+   "long": 0.67,
+   "wording": 0.224
+  },
+  "cue-5m": {
+   "id": 0.902,
+   "unseen_apps": 0.924,
+   "long": 0.646,
+   "wording": 0.25
+  },
+  "text-2m-s0": {
+   "id": 0.0,
+   "unseen_apps": 0.0,
+   "long": 0.0,
+   "wording": 0.0
+  },
+  "keyword": {
+   "id": 0.272,
+   "unseen_apps": 0.306,
+   "long": 0.006,
+   "wording": 0.246
+  },
+  "random": {
+   "id": 0.004,
+   "unseen_apps": 0.008,
+   "long": 0.0,
+   "wording": 0.004
+  },
+  "control_blind_prompt": {
+   "id": 0.0,
+   "unseen_apps": 0.0
+  },
+  "control_random_weights": {
+   "id": 0.0,
+   "unseen_apps": 0.0
+  },
+  "perturb_int8_cue-2m-s0": {
+   "id": 0.916,
+   "unseen_apps": 0.926,
+   "long": 0.65,
+   "wording": 0.306,
+   "bytes": 2167976
+  },
+  "control_clause_blind": {
+   "id": 0.362,
+   "unseen_apps": 0.362,
+   "long": 0.0,
+   "wording": 0.318
+  },
+  "perturb_clutter_cue-2m-s0": {
+   "unseen_apps": 0.866
+  },
+  "perturb_clutter_keyword": {
+   "unseen_apps": 0.292
+  },
+  "perturb_bconly_cue-2m-s0": {
+   "id": 0.896,
+   "unseen_apps": 0.916,
+   "long": 0.638,
+   "wording": 0.276
+  }
+ },
+ "eval_seconds": 314.7,
+ "n_eval": 500,
+ "checkpoint_bytes": {
+  "cue-100k.npz": 230702,
+  "cue-20k.npz": 61702,
+  "cue-2m-s0-bconly.npz": 4218426,
+  "cue-2m-s0.npz": 4218426,
+  "cue-2m-s1.npz": 4218426,
+  "cue-2m-s2.npz": 4218426,
+  "cue-500k.npz": 1178486,
+  "cue-5m.npz": 10455114,
+  "text-2m-s0.npz": 4068066
+ }
+}
